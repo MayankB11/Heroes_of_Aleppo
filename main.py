@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #Heroes of Aleppo
 import pygame as pg
 import sys
@@ -86,18 +85,3 @@ while True:
 	g.show_go_screen()
 
 pg.quit()
-=======
-import pygame
-
-pygame.init()
-width = height = 1000
-screen = pygame.display.set_mode((width, height))
-done = False
-
-while not done:
-        for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                        done = True
-        
-        pygame.display.flip()
->>>>>>> 6bc5b83848e5adfbabcda715e7b73fee05e2f414
