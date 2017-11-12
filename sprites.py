@@ -335,3 +335,113 @@ class staticMobs(pg.sprite.Sprite):
         self.health_bar = pg.Rect(0, 0, width, 7)
         if self.health < MOB_HEALTH:
             pg.draw.rect(self.image, self.col, self.health_bar)
+
+class Hostage(pg.sprite.Sprite):
+
+    def __init__(self,game,x,y):
+        self.groups = game.all_sprites,game.hostages
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = game.player_img
+        self.rect = self.image.get_rect()
+        self.hit_rect = MOB_HIT_RECT.copy()
+        self.pos = vec(x, y)
+        self.vel = vec(0, 0)
+        self.acc = vec(0, 0)
+        self.rect.center = (x,y)
+        self.hit_rect.center = self.rect.center
+        self.rot = 0
+        self.health = MOB_HEALTH
+        self.speed=MOB_SPEED
+        self.time=START_TIME
+
+    def avoid_mobs(self):
+        for mob in self.game.mobs:
+            if mob != self:
+                dist = self.pos - mob.pos
+                if 0 < dist.length() < AVOID_RADIUS:
+                    self.acc += dist.normalize()
+
+    def getCollision(self):
+#         rot = (self.game.player.pos - self.pos).angle_to(vec(1, 0))
+# #        self.image = pg.transform.rotate(self.game.mob_img, self.rot)
+# #        self.rect = self.image.get_rect()
+# #        self.rect.center = self.pos
+#         acc = vec(MOB_SPEED, 0).rotate(-rot)
+#         acc += self.vel * -1
+#         vel=self.vel + acc*self.game.dt;
+#         vel=vel.normalize()
+#         vel*=MOB_LOOKAHEAD
+#         rect_temp=pg.Rect((0,0),(TILESIZE,TILESIZE))
+#         rect_temp.center=self.pos+vel
+#         pos_temp = vec(rect_temp.center[0],rect_temp.center[1])
+#         for wall in self.game.walls:
+#             wall_rect=wall.rect
+#             wall_pos = vec(wall.rect.center[0],wall.rect.center[1])
+#             if not rect_temp.colliderect(wall_rect):
+#                 pass
+#             else:
+#                 dz = wall_pos - pos_temp
+#                 if dz.x > 0:
+#                     if dz.y > 0:
+#                         checkpt = wall.rect.bottomleft
+#                     else:
+#                         checkpt = wall.rect.topleft
+#                 else:
+#                     if dz.y > 0:
+#                         checkpt = wall.rect.bottomright
+#                     else:
+#                         checkpt = wall.rect.topright
+#                 checkvec = vec(checkpt[0],checkpt[1])
+#                 theta = dz.angle_to(checkvec)
+#                 if theta > 0:
+#                     norm = vec(checkpt[0],0)
+#                 else:
+#                     norm = vec(0,checkpt[1])
+#                 norm = norm.normalize()
+#                 target = vec(wall.rect.center[0],wall.rect.center[1])
+#                 target = target - norm*320
+#                 return target
+        return None
+
+    def seek_and_update(self,target):
+        self.rot = (target - self.pos).angle_to(vec(1, 0))
+        self.image = pg.transform.rotate(self.game.player_img, self.rot)
+        self.rect = self.image.get_rect()
+        self.rect.center = self.pos
+        self.acc = vec(1, 0).rotate(-self.rot)
+        self.avoid_mobs()
+        self.acc.scale_to_length(self.speed)
+        self.acc += self.vel * -1
+        self.vel += self.acc * self.game.dt
+        #self.pos += self.vel * self.game.dt + 0.5 * self.acc * self.game.dt ** 2
+        self.hit_rect.centerx = self.pos.x
+        collide_with_walls(self, self.game.walls, 'x')
+        self.hit_rect.centery = self.pos.y
+        collide_with_walls(self, self.game.walls, 'y')
+        self.rect.center = self.hit_rect.center
+
+    def update(self):
+#        pass
+        self.time=self.time-(self.game.dt)
+        target=self.getCollision()
+        if self.getCollision()==None:
+            self.seek_and_update(self.game.player.pos)
+        else:
+            self.seek_and_update(target)
+        if self.health <= 0:
+            self.kill()
+        if self.time<=0:
+            self.kill()
+
+    def draw_timer(self):
+        if self.time > 0.66*START_TIME:
+            self.col = GREEN
+        elif self.time > 0.33*START_TIME:
+            self.col = YELLOW
+        else:
+            self.col = RED
+        width = int(self.rect.width * self.time /START_TIME)
+        self.time_bar = pg.Rect(0, 0, width, 7)
+        #print (self.time)
+        pg.draw.rect(self.image, self.col, self.time_bar)
