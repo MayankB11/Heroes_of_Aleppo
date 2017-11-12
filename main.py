@@ -60,17 +60,20 @@ class Game:
 		self.clock = pg.time.Clock()
 		pg.key.set_repeat(200,100)
 		self.load_data()
-
-    def draw_text(self, text, font_name, size, color, x, y, align="topleft"):
-        font = pg.font.Font(font_name, size)
-        text_surface = font.render(text, True, color)
-        text_rect = text_surface.get_rect(**{align: (x, y)})
-        self.screen.blit(text_surface, text_rect)
+		self.hostage_count=0
+		self.score=0
+	def draw_text(self, text, font_name, size, color, x, y, align="topleft"):
+		font = pg.font.Font(font_name, size)
+		text_surface = font.render(text, True, color)
+		text_rect = text_surface.get_rect(**{align: (x, y)})
+		self.screen.blit(text_surface, text_rect)
 
 	def load_data(self):
 		game_folder = path.dirname(__file__)
 		map_folder = path.join(game_folder,"Tmx_Files")
 		img_folder = path.join(game_folder,"img")
+		self.title_font = path.join(img_folder, 'ZOMBIE.TTF')
+		self.hud_font = path.join(img_folder, 'Impacted2.0.ttf')
 		self.map = TiledMap(path.join(map_folder, 'level1.tmx'))
 		self.map_img = self.map.make_map()
 		self.map_rect = self.map_img.get_rect()
@@ -135,7 +138,8 @@ class Game:
 		for hit in hits:
 			self.player.resources-=HOSTAGE_RESCUE
 			hit.kill()
-		
+			self.hostage_count=self.hostage_count+1
+			
 		hits=pg.sprite.groupcollide(self.mobs,self.bullets,False,True)
 		for hit in hits:
 			hit.health-=BULLET_DAMAGE
@@ -164,6 +168,7 @@ class Game:
 			self.screen.blit(sprite.image, self.camera.apply(sprite))
 		draw_player_health(self.screen, 10, 30, self.player.health/PLAYER_HEALTH)
 		draw_player_resources(self.screen, 10, 80, self.player.resources/PLAYER_RESOURCES)        
+		self.draw_text('Hostages: {}'.format(str(self.hostage_count)+"/"+str(HOSTAGE_COUNT)), self.hud_font, 30, WHITE, WIDTH - 10, 10, align="topright")		
 		#FLIP
 		pg.display.flip()
 
