@@ -79,6 +79,7 @@ class Game:
 		self.all_sprites = pg.sprite.Group()
 		self.walls = pg.sprite.Group()
 		self.mobs = pg.sprite.Group()
+		self.mob_static=pg.sprite.Group()
 		self.bullets = pg.sprite.Group()
 		for tile_object in self.map.tmxdata.objects:
 			if tile_object.name == "Player":
@@ -89,6 +90,9 @@ class Game:
 				Obstacle(self,tile_object.x,tile_object.y,tile_object.width,tile_object.height)
 			elif tile_object.name == "mob":
 				Mob(self,tile_object.x,tile_object.y)
+			elif tile_object.name=="mobstatic":
+				staticMobs(self,tile_object.x,tile_object.y)
+
 
 		self.camera = Camera(self.map.width,self.map.height)
 
@@ -118,10 +122,11 @@ class Game:
 				self.playing = False
 		if hits:
 			self.player.pos+=vec(MOB_KNOCKBACK,0).rotate(-hits[0].rot)
+
 		hits=pg.sprite.groupcollide(self.mobs,self.bullets,False,True)
 		for hit in hits:
-			 hit.health-=BULLET_DAMAGE
-			 hit.vel=vec(0,0)
+			hit.health-=BULLET_DAMAGE
+			hit.vel=vec(0,0)
 
 	def events(self):
 		#Game Loop events
@@ -138,6 +143,8 @@ class Game:
 		self.screen.blit(self.map_img,self.camera.apply_rect(self.map_rect))
 		for sprite in self.all_sprites:
 			if isinstance(sprite, Mob):
+				sprite.draw_health()
+			elif isinstance(sprite,staticMobs):
 				sprite.draw_health()
 			self.screen.blit(sprite.image, self.camera.apply(sprite))
 		draw_player_health(self.screen, 10, 30, self.player.health/PLAYER_HEALTH)
