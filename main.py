@@ -20,9 +20,13 @@ class Game:
 	def load_data(self):
 		game_folder = path.dirname(__file__)
 		map_folder = path.join(game_folder,"Tmx_Files")
+		img_folder = path.join(game_folder,"img")
 		self.map = TiledMap(path.join(map_folder, 'level1.tmx'))
 		self.map_img = self.map.make_map()
 		self.map_rect = self.map_img.get_rect()
+		self.player_img = pg.image.load(path.join(img_folder,PLAYER_IMG)).convert_alpha()
+		self.mob_img = pg.image.load(path.join(img_folder,MOB_IMG)).convert_alpha()
+		self.mob_img = pg.transform.scale(self.mob_img, (TILESIZE,TILESIZE))
 
 	def new(self):
 		#start a new game
@@ -40,6 +44,8 @@ class Game:
 			if tile_object.name == "Wall":
 				Obstacle(self,tile_object.x,tile_object.y,tile_object.width,tile_object.height)
 			if tile_object.name == "Obstacle":
+				Obstacle(self,tile_object.x,tile_object.y,tile_object.width,tile_object.height)
+			if tile_object.name == "Mob":
 				Obstacle(self,tile_object.x,tile_object.y,tile_object.width,tile_object.height)
 
 		self.camera = Camera(self.map.width,self.map.height)

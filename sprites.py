@@ -2,13 +2,33 @@ from settings import *
 import pygame as pg
 vec = pg.math.Vector2
 
+def collide_with_walls(sprite, group, dir):
+    if dir == 'x':
+        hits = pg.sprite.spritecollide(sprite, group, False)
+        if hits:
+            if sprite.vel.x > 0:
+                sprite.pos.x = hits[0].rect.left - sprite.rect.width
+            if sprite.vel.x <0:
+                sprite.pos.x = hits[0].rect.right
+            sprite.vel.x = 0
+            sprite.rect.x = sprite.pos.x
+    if dir == 'y':
+        hits = pg.sprite.spritecollide(sprite, group, False)
+        if hits:
+            if sprite.vel.y > 0:
+                sprite.pos.y = hits[0].rect.top - sprite.rect.height
+            if sprite.vel.y <0:
+                sprite.pos.y = hits[0].rect.bottom
+            sprite.vel.y = 0
+            sprite.rect.y = sprite.pos.y
+
 class Player(pg.sprite.Sprite):
     def __init__(self,game,x,y): #x and y are the spawn co-ordinates
         self.groups = game.all_sprites
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
-        self.image = pg.Surface((TILESIZE,TILESIZE)) #create a player of TILESIZE*TILESIZE size
-        self.image.fill(BLUE)
+        self.image = self.game.player_img
+        self.angle = 90
         self.rect = self.image.get_rect()
         self.vel = vec(0,0)
         self.pos = vec(x,y)
@@ -18,45 +38,52 @@ class Player(pg.sprite.Sprite):
         keys = pg.key.get_pressed()
         if keys[pg.K_LEFT]:
             self.vel.x = -PLAYER_SPEED
+            self.image = pg.transform.rotate(self.image,180-self.angle)
+            self.angle = 180
         if keys[pg.K_RIGHT]:
             self.vel.x = PLAYER_SPEED
+            self.image = pg.transform.rotate(self.image,-self.angle)
+            self.angle = 0
         if keys[pg.K_UP]:
             self.vel.y = -PLAYER_SPEED
+            self.image = pg.transform.rotate(self.image,90-self.angle)
+            self.angle = 90
         if keys[pg.K_DOWN]:
             self.vel.y = PLAYER_SPEED
+            self.image = pg.transform.rotate(self.image,-90-self.angle)
+            self.angle = -90
         if self.vel.x!=0 and self.vel.y!=0:
-            self.vel.x = 0.7071*self.vel.x
-            self.vel.y = 0.7071*self.vel.y
-
-
-    def collide_with_walls(self,dir):
-        if dir == 'x':
-            hits = pg.sprite.spritecollide(self, self.game.walls, False)
-            if hits:
-                if self.vel.x > 0:
-                    self.pos.x = hits[0].rect.left - self.rect.width
-                if self.vel.x <0:
-                    self.pos.x = hits[0].rect.right
-                self.vel.x = 0
-                self.rect.x = self.pos.x
-        if dir == 'y':
-            hits = pg.sprite.spritecollide(self, self.game.walls, False)
-            if hits:
-                if self.vel.y > 0:
-                    self.pos.y = hits[0].rect.top - self.rect.height
-                if self.vel.y <0:
-                    self.pos.y = hits[0].rect.bottom
-                self.vel.y = 0
-                self.rect.y = self.pos.y
+            self.vel = 0.7071*self.vel
+            #TO DO make angle in multiples of 45
 
     def update(self):
         self.get_keys()
-        self.pos.x += self.vel.x * self.game.dt
-        self.pos.y += self.vel.y * self.game.dt
+        self.pos += self.vel * self.game.dt
         self.rect.x = self.pos.x
-        self.collide_with_walls('x')
+        collide_with_walls(self, self.game.walls, 'x')
         self.rect.y = self.pos.y
-        self.collide_with_walls('y')
+        collide_with_walls(self, self.game.walls, 'y')
+
+class Mob(pg.sprite.Sprite):
+    def __init__(self,game,x,y):
+        self.groups = game.all_sprites, game.mobs
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = game.mob_img
+        self.rect = self.image.get_rect()
+        self.vel = vec(0,0)
+        self.angle = 0
+        self.pos = vec(x,y)
+
+    def update(self):
+        self.angle = (self.game.player.pos-self.pos).angle_to(vec(1,0))
+        self.image = pg.transform.rotate(self.game.mob_img,self.angle)
+        self.rect =  self.image.get_rect()
+        # self.pos += self.vel * self.game.dt
+        # self.rect.x = self.pos.x
+        # collide_with_walls(self, self.game.walls, 'x')
+        # self.rect.y = self.pos.y
+        # collide_with_walls(self, self.game.walls, 'y')
 
 class Wall(pg.sprite.Sprite):
     def __init__(self,game,x,y):
