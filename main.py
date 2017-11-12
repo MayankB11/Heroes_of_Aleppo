@@ -26,6 +26,7 @@ class Game:
 		self.map_rect = self.map_img.get_rect()
 		self.player_img = pg.image.load(path.join(img_folder,PLAYER_IMG)).convert_alpha()
 		self.mob_img = pg.image.load(path.join(img_folder,MOB_IMG)).convert_alpha()
+		self.player_img = pg.transform.scale(self.player_img, (TILESIZE,TILESIZE))
 		self.mob_img = pg.transform.scale(self.mob_img, (TILESIZE,TILESIZE))
 
 	def new(self):
@@ -46,7 +47,7 @@ class Game:
 				Obstacle(self,tile_object.x,tile_object.y,tile_object.width,tile_object.height)
 			elif tile_object.name == "Obstacle":
 				Obstacle(self,tile_object.x,tile_object.y,tile_object.width,tile_object.height)
-			elif tile_object.name == "mob":
+			elif tile_object.name == "Mob":
 				Mob(self,tile_object.x,tile_object.y)
 
 		self.camera = Camera(self.map.width,self.map.height)
