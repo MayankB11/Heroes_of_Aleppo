@@ -108,6 +108,7 @@ class Game:
 				Hostage(self,tile_object.x,tile_object.y,3)
 			elif tile_object.name=="Hostage3":
 				Hostage(self,tile_object.x,tile_object.y,5)
+			
 			print(tile_object.x,tile_object.y);
 
 		self.camera = Camera(self.map.width,self.map.height)
@@ -135,6 +136,7 @@ class Game:
 			self.player.health-=MOB_DAMAGE
 			hit.vel=vec(0,0)
 			if self.player.health<=0:
+
 				self.playing = False
 		if hits:
 			self.player.pos+=vec(MOB_KNOCKBACK,0).rotate(-hits[0].rot)
