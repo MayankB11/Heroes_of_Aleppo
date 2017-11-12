@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #Heroes of Aleppo
 import pygame as pg
 import sys
@@ -20,18 +19,29 @@ class Game:
 
 	def load_data(self):
 		game_folder = path.dirname(__file__)
-		self.map = Map(path.join(game_folder, 'map.txt'))
+		map_folder = path.join(game_folder,"Tmx_Files")
+		self.map = TiledMap(path.join(map_folder, 'level1.tmx'))
+		self.map_img = self.map.make_map()
+		self.map_rect = self.map_img.get_rect()
 
 	def new(self):
 		#start a new game
 		self.all_sprites = pg.sprite.Group()
 		self.walls = pg.sprite.Group()
-		for row, tiles in enumerate(self.map.data):
-			for col, tile in enumerate(tiles):
-				if tile == '1':
-					Wall(self, col, row)
-				if tile == 'P':
-					self.player = Player(self, col, row)
+		# for row, tiles in enumerate(self.map.data):
+		# 	for col, tile in enumerate(tiles):
+		# 		if tile == '1':
+		# 			Wall(self, col, row)
+		# 		if tile == 'P':
+		# 			self.player = Player(self, col, row)
+		for tile_object in self.map.tmxdata.objects:
+			if tile_object.name == "Player":
+				self.player = Player(self,tile_object.x, tile_object.y)
+			if tile_object.name == "Wall":
+				Obstacle(self,tile_object.x,tile_object.y,tile_object.width,tile_object.height)
+			if tile_object.name == "Obstacle":
+				Obstacle(self,tile_object.x,tile_object.y,tile_object.width,tile_object.height)
+
 		self.camera = Camera(self.map.width,self.map.height)
 
 	def run(self):
@@ -64,7 +74,8 @@ class Game:
 
 	def draw(self):
 		#Game Loop draw
-		self.screen.fill(BLACK)
+		#self.screen.fill(BLACK)
+		self.screen.blit(self.map_img,self.camera.apply_rect(self.map_rect))
 		for sprite in self.all_sprites:
 			self.screen.blit(sprite.image, self.camera.apply(sprite))
 		#FLIP
@@ -86,18 +97,3 @@ while True:
 	g.show_go_screen()
 
 pg.quit()
-=======
-import pygame
-
-pygame.init()
-width = height = 1000
-screen = pygame.display.set_mode((width, height))
-done = False
-
-while not done:
-        for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                        done = True
-        
-        pygame.display.flip()
->>>>>>> 6bc5b83848e5adfbabcda715e7b73fee05e2f414

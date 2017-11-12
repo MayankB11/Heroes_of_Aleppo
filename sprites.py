@@ -11,7 +11,7 @@ class Player(pg.sprite.Sprite):
         self.image.fill(BLUE)
         self.rect = self.image.get_rect()
         self.vel = vec(0,0)
-        self.pos = vec(x,y)*TILESIZE
+        self.pos = vec(x,y)
 
     def get_keys(self):
         self.vel =vec(0,0)
@@ -58,7 +58,6 @@ class Player(pg.sprite.Sprite):
         self.rect.y = self.pos.y
         self.collide_with_walls('y')
 
-
 class Wall(pg.sprite.Sprite):
     def __init__(self,game,x,y):
         self.groups = game.all_sprites, game.walls
@@ -71,3 +70,14 @@ class Wall(pg.sprite.Sprite):
         self.y = y
         self.rect.x = x*TILESIZE
         self.rect.y = y*TILESIZE
+
+class Obstacle(pg.sprite.Sprite):
+    def __init__(self,game,x,y,w,h):
+        self.groups = game.walls
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        self.rect = pg.Rect(x,y,w,h)
+        self.x = x
+        self.y = y
+        self.rect.x = x
+        self.rect.y = y
