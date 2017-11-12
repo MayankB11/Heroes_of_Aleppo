@@ -102,8 +102,12 @@ class Game:
 				Mob(self,tile_object.x,tile_object.y)
 			elif tile_object.name=="mobstatic":
 				staticMobs(self,tile_object.x,tile_object.y)
-			elif tile_object.name=="Hostage":
-				Hostage(self,tile_object.x,tile_object.y)
+			elif tile_object.name=="Hostage1":
+				Hostage(self,tile_object.x,tile_object.y,1)
+			elif tile_object.name=="Hostage2":
+				Hostage(self,tile_object.x,tile_object.y,3)
+			elif tile_object.name=="Hostage3":
+				Hostage(self,tile_object.x,tile_object.y,5)
 			print(tile_object.x,tile_object.y);
 
 		self.camera = Camera(self.map.width,self.map.height)
@@ -139,7 +143,7 @@ class Game:
 			self.player.resources-=HOSTAGE_RESCUE
 			hit.kill()
 			self.hostage_count=self.hostage_count+1
-			
+			self.score+=100
 		hits=pg.sprite.groupcollide(self.mobs,self.bullets,False,True)
 		for hit in hits:
 			hit.health-=BULLET_DAMAGE

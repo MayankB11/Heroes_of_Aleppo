@@ -62,8 +62,11 @@ class Player(pg.sprite.Sprite):
                 self.last_shot = now
                 dir = vec(1, 0).rotate(-self.rot)
                 pos = self.pos + BARREL_OFFSET.rotate(-self.rot)
-                Bullet(self.game, pos, dir)
+                for i in range(-2,3):
+                    dir_temp=dir.rotate(i*20)   
+                    Bullet(self.game, pos, dir_temp)
                 self.vel = vec(-KICKBACK, 0).rotate(-self.rot)
+
 
     def update(self):
         self.get_keys()
@@ -338,7 +341,7 @@ class staticMobs(pg.sprite.Sprite):
 
 class Hostage(pg.sprite.Sprite):
 
-    def __init__(self,game,x,y):
+    def __init__(self,game,x,y,factor):
         self.groups = game.all_sprites,game.hostages
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
@@ -353,7 +356,7 @@ class Hostage(pg.sprite.Sprite):
         self.rot = 0
         self.health = MOB_HEALTH
         self.speed=MOB_SPEED
-        self.time=START_TIME
+        self.time=START_TIME*factor
 
     def avoid_mobs(self):
         for mob in self.game.mobs:
