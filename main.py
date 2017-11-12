@@ -32,6 +32,7 @@ class Game:
 		#start a new game
 		self.all_sprites = pg.sprite.Group()
 		self.walls = pg.sprite.Group()
+		self.mobs = pg.sprite.Group()
 		# for row, tiles in enumerate(self.map.data):
 		# 	for col, tile in enumerate(tiles):
 		# 		if tile == '1':
@@ -41,12 +42,12 @@ class Game:
 		for tile_object in self.map.tmxdata.objects:
 			if tile_object.name == "Player":
 				self.player = Player(self,tile_object.x, tile_object.y)
-			if tile_object.name == "Wall":
+			elif tile_object.name == "Wall":
 				Obstacle(self,tile_object.x,tile_object.y,tile_object.width,tile_object.height)
-			if tile_object.name == "Obstacle":
+			elif tile_object.name == "Obstacle":
 				Obstacle(self,tile_object.x,tile_object.y,tile_object.width,tile_object.height)
-			if tile_object.name == "Mob":
-				Obstacle(self,tile_object.x,tile_object.y,tile_object.width,tile_object.height)
+			elif tile_object.name == "mob":
+				Mob(self,tile_object.x,tile_object.y)
 
 		self.camera = Camera(self.map.width,self.map.height)
 
@@ -84,6 +85,7 @@ class Game:
 		self.screen.blit(self.map_img,self.camera.apply_rect(self.map_rect))
 		for sprite in self.all_sprites:
 			self.screen.blit(sprite.image, self.camera.apply(sprite))
+		
 		#FLIP
 		pg.display.flip()
 

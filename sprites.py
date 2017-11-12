@@ -30,6 +30,7 @@ class Player(pg.sprite.Sprite):
         self.image = self.game.player_img
         self.angle = 90
         self.rect = self.image.get_rect()
+        self.rect.center = (x,y)
         self.vel = vec(0,0)
         self.pos = vec(x,y)
 
@@ -71,19 +72,20 @@ class Mob(pg.sprite.Sprite):
         self.game = game
         self.image = game.mob_img
         self.rect = self.image.get_rect()
+        self.rect.center = (x,y)
         self.vel = vec(0,0)
-        self.angle = 0
+        self.angle = 90
         self.pos = vec(x,y)
 
     def update(self):
-        self.angle = (self.game.player.pos-self.pos).angle_to(vec(1,0))
-        self.image = pg.transform.rotate(self.game.mob_img,self.angle)
+        self.rot = (self.game.player.pos-self.pos).angle_to(vec(1,0))
         self.rect =  self.image.get_rect()
-        # self.pos += self.vel * self.game.dt
-        # self.rect.x = self.pos.x
-        # collide_with_walls(self, self.game.walls, 'x')
-        # self.rect.y = self.pos.y
-        # collide_with_walls(self, self.game.walls, 'y')
+        self.image = pg.transform.rotate(self.game.mob_img,self.rot-self.angle)
+        self.pos += self.vel * self.game.dt
+        self.rect.x = self.pos.x
+        collide_with_walls(self, self.game.walls, 'x')
+        self.rect.y = self.pos.y
+        collide_with_walls(self, self.game.walls, 'y')
 
 class Wall(pg.sprite.Sprite):
     def __init__(self,game,x,y):

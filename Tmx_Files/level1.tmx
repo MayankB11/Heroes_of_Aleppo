@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" tiledversion="1.0.3" orientation="orthogonal" renderorder="right-down" width="30" height="50" tilewidth="32" tileheight="32" nextobjectid="121">
+<map version="1.0" tiledversion="1.0.3" orientation="orthogonal" renderorder="right-down" width="30" height="50" tilewidth="32" tileheight="32" nextobjectid="124">
  <tileset firstgid="1" source="../img/Level 1/Base_level.tsx"/>
  <tileset firstgid="341" source="../img/Level 1/Base_level.tsx"/>
  <tileset firstgid="681" source="../img/Level 1/Walls.tsx"/>
@@ -264,5 +264,8 @@
   <object id="117" name="Wall" x="945" y="17" width="15.3333" height="1582.67"/>
   <object id="119" name="Wall" x="5" y="1583.67" width="958" height="16"/>
   <object id="120" name="Player" x="711.667" y="233" width="16" height="16"/>
+  <object id="121" name="mob" x="488.667" y="324" width="16" height="16"/>
+  <object id="122" name="mob" x="679.667" y="586" width="16" height="16"/>
+  <object id="123" name="mob" x="455.667" y="775" width="16" height="16"/>
  </objectgroup>
 </map>
