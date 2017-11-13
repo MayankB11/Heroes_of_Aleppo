@@ -5,8 +5,40 @@ from os import path
 from settings import *
 from sprites import *
 from tilemap import *
+vec = pg.math.Vector2
 
 # HUD functions
+
+import math
+
+
+class Graph:
+	def __init__(self):
+		self.nodes = []
+		self.edges = []
+		self.obstacles = []
+
+	def wall_avoided(self,i,j):
+		node1 = self.nodes[i]
+		node2 = self.nodes[j]
+		for obstacle in self.obstacles:
+			if self.distance_to_line(node1,node2,obstacle) < TILESIZE:
+				return False
+		return True
+
+	def distance_to_line(self, p1, p2 , p3):
+	    x_diff = p2.x - p1.x
+	    y_diff = p2.y - p1.y
+	    num = abs(y_diff*p3.x - x_diff*p3.y + p2.x*p1.y - p2.y*p1.x)
+	    den = math.sqrt(y_diff**2 + x_diff**2)+0.01
+	    return num / den
+
+	def computeEdges(self):
+		for i in range(len(self.nodes)):
+			for j in range(i,len(self.nodes)):
+				if self.wall_avoided(i,j) == True:
+					self.edges.append(vec(self.nodes[i],self.nodes[j]))
+
 
 def draw_player_health(surf, x, y, pct): #Adds the player health bar
 	fontfile = pg.font.get_default_font()
@@ -60,6 +92,7 @@ class Game:
 		self.clock = pg.time.Clock()
 		pg.key.set_repeat(200,100)
 		self.load_data()
+		self.graph = None
 
 	def load_data(self):
 		game_folder = path.dirname(__file__)
@@ -149,12 +182,23 @@ class Game:
 		# Show start screen
 		pass
 
+	def makeSSG(self):
+		g = Graph()
+		for tile_object in self.map.tmxdata.objects:
+			if tile_object.name == "Subgoal":
+				g.nodes.append (vec(tile_object.x, tile_object.y))
+			if tile_object.name == "Wall":
+				g.obstacles.append (vec(tile_object.x, tile_object.y))
+		g.computeEdges()
+		return g
+
 	def show_go_screen(self):
 		# Show screen
 		pass
 
 g = Game()
 g.show_start_screen()
+g.graph = g.makeSSG()
 while True:
 	g.new()
 	g.run()

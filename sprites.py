@@ -1,9 +1,10 @@
 from settings import *
 from tilemap import collide_hit_rect
 import pygame as pg
+import math
 vec = pg.math.Vector2
 from random import uniform
-
+from rrt import *
 
 def collide_with_walls(sprite, group, dir):
     if dir == 'x':
@@ -94,6 +95,10 @@ class Mob(pg.sprite.Sprite):
         self.rot = 0
         self.health = MOB_HEALTH
         self.speed=MOB_SPEED
+        self.path = None
+        self.pathNode = -1
+        self.playerNode = None
+
     def avoid_mobs(self):
         for mob in self.game.mobs:
             if mob != self:
@@ -101,50 +106,132 @@ class Mob(pg.sprite.Sprite):
                 if 0 < dist.length() < AVOID_RADIUS:
                     self.acc += dist.normalize()
 
+    def should_replan(self):
+        if (self.path == None or self.playerNode == None):
+            return True
+        nearestDistPlayer = math.inf
+        nearestNodePlayer = self.game.graph.nodes[0]        
+        for node in self.game.graph.nodes:
+            if math.sqrt((node.x-self.game.player.pos.x)**2+(node.y-self.game.player.pos.y)**2) < nearestDistPlayer:
+                nearestDistPlayer = math.sqrt((node.x-self.pos.x)**2+(node.y-self.pos.y)**2)
+                nearestNodePlayer = node
+        if self.playerNode != nearestNodePlayer :
+            return True
+        if self.pathNode + 1 == len(self.path):
+            return True
+        return False
+
     def getCollision(self):
-#         rot = (self.game.player.pos - self.pos).angle_to(vec(1, 0))
-# #        self.image = pg.transform.rotate(self.game.mob_img, self.rot)
-# #        self.rect = self.image.get_rect()
-# #        self.rect.center = self.pos
-#         acc = vec(MOB_SPEED, 0).rotate(-rot)
-#         acc += self.vel * -1
-#         vel=self.vel + acc*self.game.dt;
-#         vel=vel.normalize()
-#         vel*=MOB_LOOKAHEAD
-#         rect_temp=pg.Rect((0,0),(TILESIZE,TILESIZE))
-#         rect_temp.center=self.pos+vel
-#         pos_temp = vec(rect_temp.center[0],rect_temp.center[1])
-#         for wall in self.game.walls:
-#             wall_rect=wall.rect
-#             wall_pos = vec(wall.rect.center[0],wall.rect.center[1])
-#             if not rect_temp.colliderect(wall_rect):
-#                 pass
-#             else:
-#                 dz = wall_pos - pos_temp
-#                 if dz.x > 0:
-#                     if dz.y > 0:
-#                         checkpt = wall.rect.bottomleft
-#                     else:
-#                         checkpt = wall.rect.topleft
-#                 else:
-#                     if dz.y > 0:
-#                         checkpt = wall.rect.bottomright
-#                     else:
-#                         checkpt = wall.rect.topright
-#                 checkvec = vec(checkpt[0],checkpt[1])
-#                 theta = dz.angle_to(checkvec)
-#                 if theta > 0:
-#                     norm = vec(checkpt[0],0)
-#                 else:
-#                     norm = vec(0,checkpt[1])
-#                 norm = norm.normalize()
-#                 target = vec(wall.rect.center[0],wall.rect.center[1])
-#                 target = target - norm*320
-#                 return target
+        rot = (self.game.player.pos - self.pos).angle_to(vec(1, 0))
+        self.image = pg.transform.rotate(self.game.mob_img, self.rot)
+        self.rect = self.image.get_rect()
+        self.rect.center = self.pos
+        acc = vec(MOB_SPEED, 0).rotate(-rot)
+        acc += self.vel * -1
+        vel=self.vel
+        if self.vel.x == 0 and self.vel.y == 0:
+            return None
+        vel=vel.normalize()
+        vel*=MOB_LOOKAHEAD
+        rect_temp=pg.Rect((0,0),(TILESIZE,TILESIZE))
+        rect_temp.center=self.pos+vel
+        pos_temp = vec(rect_temp.center[0],rect_temp.center[1])
+        for wall in self.game.walls:
+            wall_rect=wall.rect
+            wall_pos = vec(wall.rect.center[0],wall.rect.center[1])
+            if not rect_temp.colliderect(wall_rect):
+                pass
+            else:
+                dz = wall_pos - pos_temp
+                if dz.x > 0:
+                    if dz.y > 0:
+                        checkpt = wall.rect.bottomleft
+                    else:
+                        checkpt = wall.rect.topleft
+                else:
+                    if dz.y > 0:
+                        checkpt = wall.rect.bottomright
+                    else:
+                        checkpt = wall.rect.topright
+                checkvec = vec(checkpt[0],checkpt[1])
+                theta = dz.angle_to(checkvec)
+                if theta > 0:
+                    norm = vec(checkpt[0],0)
+                else:
+                    norm = vec(0,checkpt[1])
+                norm = norm.normalize()
+                target = vec(wall.rect.center[0],wall.rect.center[1])
+                target = target - norm*320
+                return target
         return None
 
+    def getPath(self):
+        nearestDistMob = math.inf
+        nearestNodeMob = self.game.graph.nodes[0]
+        nearestDistPlayer = math.inf
+        nearestNodePlayer = self.game.graph.nodes[0]
+        tempMob = 0 
+        tempPlayer = 0 
+        for node in self.game.graph.nodes:
+            if math.sqrt((node.x-self.pos.x)**2+(node.y-self.pos.y)**2) < nearestDistMob:
+                nearestDistMob = math.sqrt((node.x-self.pos.x)**2+(node.y-self.pos.y)**2)
+                nearestNodeMob = node
+                tempMob = self.game.graph.nodes.index(node)
+            if math.sqrt((node.x-self.game.player.pos.x)**2+(node.y-self.game.player.pos.y)**2) < nearestDistPlayer:
+                nearestDistPlayer = math.sqrt((node.x-self.pos.x)**2+(node.y-self.pos.y)**2)
+                nearestNodePlayer = node
+                tempPlayer = self.game.graph.nodes.index(node)
+        if self.should_replan() == False:
+            if math.sqrt((self.path[self.pathNode].x-self.pos.x)**2+(self.path[self.pathNode].y-self.pos.y)**2) < 1.2*TILESIZE:
+                self.pathNode +=1
+            return self.path[self.pathNode]
+
+        dist = [math.inf]*(len(self.game.graph.nodes))
+        parent = [None]*(len(self.game.graph.nodes))
+        dist[tempMob] = 0
+        nodes = self.game.graph.nodes
+
+
+        while dist[tempPlayer] == math.inf :
+            for i in range(len(nodes)):
+                if dist[i] == math.inf :
+                    continue
+                for j in range(len(nodes)):
+                    if dist[i]+ math.sqrt((nodes[i].x-nodes[j].x)**2+(nodes[i].y-nodes[j].y)**2) > dist[j] or i==j:
+                        continue
+                    if vec(nodes[i],nodes[j]) in self.game.graph.edges : 
+                        dist[j] = dist[i]+ math.sqrt((nodes[i].x - nodes[j].x)**2+(nodes[i].y-nodes[j].y)**2) 
+                        parent[j] = i
+                    if vec(nodes[j],nodes[i]) in self.game.graph.edges :
+                        dist[j] = dist[i]+ math.sqrt((nodes[i].x-nodes[j].x)**2+(nodes[i].y-nodes[j].y)**2) 
+                        parent[j] = i
+        if tempPlayer == tempMob :
+            return self.game.player.pos
+
+        temp_node = nodes[tempPlayer] 
+        self.playerNode = temp_node
+        temp_path = []
+        temp_path.append(tempPlayer)              
+        while tempMob != tempPlayer:
+            tempMob = nodes.index(temp_node)
+            for i in range(len(nodes)):
+                if parent[i] == tempMob:
+                    temp_path.append(i)
+                    temp_node = nodes[i]
+                    tempPlayer = i
+        self.pathNode = 0
+        self.path = []
+        for i in range(len(temp_path)-1,-1,-1):
+            self.path.append(nodes[temp_path[i]])
+        return self.path[self.pathNode]
+
+
+
     def seek_and_update(self,target):
-        self.rot = (target - self.pos).angle_to(vec(1, 0))
+        #if target == self.game.player.pos and math.sqrt((self.pos.x-self.game.player.pos.x)**2+(self.pos.y-self.game.player.pos.y)**2) < SEEK_RADIUS:
+         #   target = rrt(self.pos,self.game.player.pos,self.game.walls).point
+        self.rot = (target- self.pos).angle_to(vec(1, 0))
+        self.rot += 0.01
         self.image = pg.transform.rotate(self.game.mob_img, self.rot)
         self.rect = self.image.get_rect()
         self.rect.center = self.pos
@@ -159,13 +246,16 @@ class Mob(pg.sprite.Sprite):
         self.hit_rect.centery = self.pos.y
         collide_with_walls(self, self.game.walls, 'y')
         self.rect.center = self.hit_rect.center
+        
 
     def update(self):
 #        pass
-        target=self.getCollision()
-        if self.getCollision()==None:
-            self.seek_and_update(self.game.player.pos)
-        else:
+        if math.sqrt((self.pos.x-self.game.player.pos.x)**2+(self.pos.y-self.game.player.pos.y)**2) < SEEK_RADIUS:
+            target = 5*(self.game.player.pos-self.pos)+self.pos
+            self.seek_and_update(target)
+        elif math.sqrt((self.pos.x-self.game.player.pos.x)**2+(self.pos.y-self.game.player.pos.y)**2) < DETECT_RADIUS :
+            target = self.getPath()
+            target = vec(target.x,target.y)
             self.seek_and_update(target)
         if self.health <= 0:
             self.kill()
