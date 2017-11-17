@@ -12,18 +12,12 @@ class Node(object):
 
 XDIM = 960
 YDIM = 800
-windowSize = [XDIM, YDIM]
 delta = 50.0
 GAME_LEVEL = 1
 GOAL_RADIUS = 50
 MIN_DISTANCE_TO_ADD = 50.0
 NUMNODES = 500
-white = 255, 255, 255
-black = 0, 0, 0
-red = 255, 0, 0
-blue = 0, 255, 0
-green = 0, 0, 255
-cyan = 0,180,105
+
 
 count = 0
 

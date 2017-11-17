@@ -5,7 +5,7 @@ import math
 vec = pg.math.Vector2
 from random import uniform
 from rrt import *
-
+from bfs import *
 def collide_with_walls(sprite, group, dir):
     if dir == 'x':
         hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect)
@@ -14,6 +14,8 @@ def collide_with_walls(sprite, group, dir):
                 sprite.pos.x = hits[0].rect.left - sprite.hit_rect.width / 2
             if hits[0].rect.centerx < sprite.hit_rect.centerx:
                 sprite.pos.x = hits[0].rect.right + sprite.hit_rect.width / 2
+                # sprite.vel.x = +20
+            
             sprite.vel.x = 0
             sprite.hit_rect.centerx = sprite.pos.x
     if dir == 'y':
@@ -21,6 +23,7 @@ def collide_with_walls(sprite, group, dir):
         if hits:
             if hits[0].rect.centery > sprite.hit_rect.centery:
                 sprite.pos.y = hits[0].rect.top - sprite.hit_rect.height / 2
+        
             if hits[0].rect.centery < sprite.hit_rect.centery:
                 sprite.pos.y = hits[0].rect.bottom + sprite.hit_rect.height / 2
             sprite.vel.y = 0
@@ -111,13 +114,10 @@ class Mob(pg.sprite.Sprite):
             return True
         nearestDistPlayer = math.inf
         nearestNodePlayer = self.game.graph.nodes[0]        
-        for node in self.game.graph.nodes:
-            if math.sqrt((node.x-self.game.player.pos.x)**2+(node.y-self.game.player.pos.y)**2) < nearestDistPlayer:
-                nearestDistPlayer = math.sqrt((node.x-self.pos.x)**2+(node.y-self.pos.y)**2)
-                nearestNodePlayer = node
-        if self.playerNode != nearestNodePlayer :
+
+        if self.pathNode >= len(self.path):
             return True
-        if self.pathNode + 1 == len(self.path):
+        if self.lineRectCollision(self.game.player.pos,self.path[self.pathNode]) :
             return True
         return False
 
@@ -165,6 +165,19 @@ class Mob(pg.sprite.Sprite):
                 return target
         return None
 
+    def lineRectCollision(self,pos,rect_center):
+        if (rect_center.x-pos.x) !=0:
+            slope = (rect_center.y-pos.y)/(rect_center.x-pos.x)
+        else:
+            slope = abs(rect_center.y-pos.y)/0.01
+        c = pos.y - slope*pos.x
+        walls = self.game.walls
+        for wall in walls:
+            if ((wall.y-slope*wall.x-c)/math.sqrt(1+slope**2)) < 0.72*TILESIZE:
+                return True
+            else :
+                return False
+
     def getPath(self):
         nearestDistMob = math.inf
         nearestNodeMob = self.game.graph.nodes[0]
@@ -173,18 +186,21 @@ class Mob(pg.sprite.Sprite):
         tempMob = 0 
         tempPlayer = 0 
         for node in self.game.graph.nodes:
-            if math.sqrt((node.x-self.pos.x)**2+(node.y-self.pos.y)**2) < nearestDistMob:
+            if math.sqrt((node.x-self.pos.x)**2+(node.y-self.pos.y)**2) < nearestDistMob and self.lineRectCollision(self.pos,node) == False:
                 nearestDistMob = math.sqrt((node.x-self.pos.x)**2+(node.y-self.pos.y)**2)
                 nearestNodeMob = node
                 tempMob = self.game.graph.nodes.index(node)
-            if math.sqrt((node.x-self.game.player.pos.x)**2+(node.y-self.game.player.pos.y)**2) < nearestDistPlayer:
+            if math.sqrt((node.x-self.game.player.pos.x)**2+(node.y-self.game.player.pos.y)**2) < nearestDistPlayer and self.lineRectCollision(self.game.player.pos,node) == False:
                 nearestDistPlayer = math.sqrt((node.x-self.pos.x)**2+(node.y-self.pos.y)**2)
                 nearestNodePlayer = node
                 tempPlayer = self.game.graph.nodes.index(node)
         if self.should_replan() == False:
             if math.sqrt((self.path[self.pathNode].x-self.pos.x)**2+(self.path[self.pathNode].y-self.pos.y)**2) < 1.2*TILESIZE:
                 self.pathNode +=1
-            return self.path[self.pathNode]
+            try :
+                return self.path[self.pathNode]
+            except :
+                return self.game.player.pos
 
         dist = [math.inf]*(len(self.game.graph.nodes))
         parent = [None]*(len(self.game.graph.nodes))
@@ -250,13 +266,17 @@ class Mob(pg.sprite.Sprite):
 
     def update(self):
 #        pass
-        if math.sqrt((self.pos.x-self.game.player.pos.x)**2+(self.pos.y-self.game.player.pos.y)**2) < SEEK_RADIUS:
-            target = 5*(self.game.player.pos-self.pos)+self.pos
-            self.seek_and_update(target)
-        elif math.sqrt((self.pos.x-self.game.player.pos.x)**2+(self.pos.y-self.game.player.pos.y)**2) < DETECT_RADIUS :
-            target = self.getPath()
-            target = vec(target.x,target.y)
-            self.seek_and_update(target)
+        # try :
+        #     target = self.game.stepsMap[str([str(self.pos//TILESIZE),self.game.player.pos//TILESIZE])]
+        #     print("Here")
+        # except :
+        #     target = self.game.player.pos
+        # if math.sqrt((self.pos.x-self.game.player.pos.x)**2+(self.pos.y-self.game.player.pos.y)**2) < SEEK_RADIUS :
+        #     target = 5*(self.game.player.pos-self.pos)+self.pos
+        #     self.seek_and_update(target)
+        # elif math.sqrt((self.pos.x-self.game.player.pos.x)**2+(self.pos.y-self.game.player.pos.y)**2) < DETECT_RADIUS :
+        target = vec(target.x,target.y)
+        self.seek_and_update(target)
         if self.health <= 0:
             self.kill()
 

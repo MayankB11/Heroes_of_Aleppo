@@ -5,6 +5,7 @@ from os import path
 from settings import *
 from sprites import *
 from tilemap import *
+from bfs import *
 vec = pg.math.Vector2
 
 # HUD functions
@@ -93,6 +94,7 @@ class Game:
 		pg.key.set_repeat(200,100)
 		self.load_data()
 		self.graph = None
+		self.stepsMap = {}
 
 	def load_data(self):
 		game_folder = path.dirname(__file__)
@@ -189,6 +191,8 @@ class Game:
 				g.nodes.append (vec(tile_object.x, tile_object.y))
 			if tile_object.name == "Wall":
 				g.obstacles.append (vec(tile_object.x, tile_object.y))
+			if tile_object.name == "Obstacle":
+				g.obstacles.append (vec(tile_object.x, tile_object.y))
 		g.computeEdges()
 		return g
 
@@ -199,8 +203,12 @@ class Game:
 g = Game()
 g.show_start_screen()
 g.graph = g.makeSSG()
+flag = 0
 while True:
 	g.new()
+	if flag == 0:
+		flag =1
+		g.stepsMap = generateSteps(g.walls)
 	g.run()
 	g.show_go_screen()
 
