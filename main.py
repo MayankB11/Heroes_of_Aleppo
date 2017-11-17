@@ -5,8 +5,14 @@ from os import path
 from settings import *
 from sprites import *
 from tilemap import *
+from moviepy.editor import *
+from pygame.locals import *
+import imageio
+imageio.plugins.ffmpeg.download()
 
 # HUD functions
+img = pg.image.load('final.png')
+img = pg.transform.scale(img, (WIDTH, 720))
 
 def draw_player_health(surf, x, y, pct): #Adds the player health bar
 	fontfile = pg.font.get_default_font()
@@ -59,9 +65,12 @@ class Game:
 		pg.display.set_caption(TITLE)
 		self.clock = pg.time.Clock()
 		pg.key.set_repeat(200,100)
+
 		self.load_data()
 		self.hostage_count=0
 		self.score=0
+		self.paused=False
+		self.intro=False
 	def draw_text(self, text, font_name, size, color, x, y, align="topleft"):
 		font = pg.font.Font(font_name, size)
 		text_surface = font.render(text, True, color)
@@ -72,6 +81,9 @@ class Game:
 		game_folder = path.dirname(__file__)
 		map_folder = path.join(game_folder,"Tmx_Files")
 		img_folder = path.join(game_folder,"img")
+		self.clip = (VideoFileClip("Intro_720p.mp4").fx(vfx.resize, width=960))
+		self.dim_screen = pg.Surface(self.screen.get_size()).convert_alpha()
+		self.dim_screen.fill((0, 0, 0, 180))
 		self.title_font = path.join(img_folder, 'ZOMBIE.TTF')
 		self.hud_font = path.join(img_folder, 'Impacted2.0.ttf')
 		self.map = TiledMap(path.join(map_folder, 'level1.tmx'))
@@ -90,6 +102,7 @@ class Game:
 		self.mobs = pg.sprite.Group()
 		self.mob_static=pg.sprite.Group()
 		self.bullets = pg.sprite.Group()
+		#self.clip.preview()
 		self.hostages=pg.sprite.Group()
 		for tile_object in self.map.tmxdata.objects:
 			if tile_object.name == "Player":
@@ -108,18 +121,26 @@ class Game:
 				Hostage(self,tile_object.x,tile_object.y,3)
 			elif tile_object.name=="Hostage3":
 				Hostage(self,tile_object.x,tile_object.y,5)
-			
-			print(tile_object.x,tile_object.y);
+			elif tile_object.name=="NPCPlayer":
+				self.support1 = Support(self,tile_object.x,tile_object.y,120)
+			elif tile_object.name=="NPCPlayer1":
+				self.support2 = Support(self,tile_object.x,tile_object.y,-120)
+
+	#		print(tile_object.x,tile_object.y);
 
 		self.camera = Camera(self.map.width,self.map.height)
 
 	def run(self):
 		#start a new game
+		if not self.intro:
+		#	self.clip.preview()
+			self.intro=True
 		self.playing = True
 		while self.playing:
 			self.dt = self.clock.tick(FPS)/1000
 			self.events()
-			self.update()
+			if not self.paused:
+				self.update()
 			self.draw()
 
 	def quit(self):
@@ -133,11 +154,21 @@ class Game:
 		self.camera.update(self.player)
 		hits = pg.sprite.spritecollide(self.player, self.mobs, False, collide_hit_rect)
 		for hit in hits:
-			self.player.health-=MOB_DAMAGE
+			self.player.health=self.player.health-MOB_DAMAGE
 			hit.vel=vec(0,0)
 			if self.player.health<=0:
 
 				self.playing = False
+			elif self.player.health <= 30:
+				self.support2.kill()
+				if self.support2.isKilled == False:
+					self.player.resources=self.player.resources-0.20*PLAYER_RESOURCES
+				self.support2.isKilled = True
+			elif self.player.health <= 60:
+				self.support1.kill()
+				if self.support1.isKilled == False:
+					self.player.resources=self.player.resources-0.20*PLAYER_RESOURCES
+				self.support1.isKilled = True
 		if hits:
 			self.player.pos+=vec(MOB_KNOCKBACK,0).rotate(-hits[0].rot)
 		hits = pg.sprite.spritecollide(self.player, self.hostages, False, collide_hit_rect)
@@ -156,6 +187,13 @@ class Game:
 		for event in pg.event.get():
 			if event.type == pg.QUIT:
 				self.quit()
+			if event.type == pg.KEYDOWN:
+				if event.key == pg.K_ESCAPE:
+					self.quit()
+				#if event.key == pg.K_h:
+				#	self.draw_debug = not self.draw_debug
+				if event.key == pg.K_p:
+					self.paused = not self.paused
 
 
 
@@ -176,18 +214,47 @@ class Game:
 		draw_player_resources(self.screen, 10, 80, self.player.resources/PLAYER_RESOURCES)        
 		self.draw_text('Hostages: {}'.format(str(self.hostage_count)+"/"+str(HOSTAGE_COUNT)), self.hud_font, 30, WHITE, WIDTH - 10, 10, align="topright")		
 		#FLIP
+		if self.paused:
+			self.screen.blit(self.dim_screen, (0, 0))
+			self.draw_text("Paused", self.title_font, 105, RED, WIDTH / 2, HEIGHT / 2, align="center")
 		pg.display.flip()
 
 	def show_start_screen(self):
 		# Show start screen
-		pass
+		intro = True
+		while intro:
+			for event in pg.event.get():
+				if event.type == pg.QUIT:
+					pg.quit()
+					quit()
+				if event.type == pg.KEYDOWN:
+					if event.key == pg.K_RETURN:
+						intro = False
+			self.screen.fill(WHITE)
+			self.screen.blit(img,(0,0))
+			pg.display.update()
+		
 
 	def show_go_screen(self):
 		# Show screen
 		pass
-
+# def start_game():
+# 	intro = True
+# 	while intro:
+# 		for event in pg.event.get():
+# 			if event.type == pg.QUIT:
+# 				pg.quit()
+# 				quit()
+# 			if event.type == pg.KEYDOWN:
+# 				if event.key == pg.K_RETURN:
+# 					intro = False
+# 		self.screen.fill(WHITE)
+# 		self.screen.blit(img,(0,0))
+# 		pg.display.update()
+clip = (VideoFileClip("Intro_720p.mp4").fx(vfx.resize, width=960))
+#clip.preview()
 g = Game()
-g.show_start_screen()
+#g.show_start_screen()
 while True:
 	g.new()
 	g.run()

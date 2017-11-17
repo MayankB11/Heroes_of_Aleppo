@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" tiledversion="1.0.3" orientation="orthogonal" renderorder="right-down" width="30" height="50" tilewidth="32" tileheight="32" nextobjectid="226">
+<map version="1.0" tiledversion="1.0.3" orientation="orthogonal" renderorder="right-down" width="30" height="50" tilewidth="32" tileheight="32" nextobjectid="228">
  <tileset firstgid="1" source="../img/Level 1/Base_level.tsx"/>
  <tileset firstgid="341" source="../img/Level 1/Base_level.tsx"/>
  <tileset firstgid="681" source="../img/Level 1/Walls.tsx"/>
@@ -231,7 +231,7 @@
   <object id="82" name="Obstacle" x="736" y="96" width="32" height="63"/>
   <object id="83" name="Obstacle" x="801" y="94" width="32" height="63"/>
   <object id="84" name="Obstacle" x="864" y="223" width="32" height="63"/>
-  <object id="85" name="Obstacle" x="414" y="245" width="32" height="63"/>
+  <object id="85" name="Obstacle" x="352" y="224" width="32" height="63"/>
   <object id="86" name="Obstacle" x="767" y="384" width="32" height="63"/>
   <object id="87" name="Obstacle" x="831" y="382" width="32" height="63"/>
   <object id="88" name="Obstacle" x="193" y="384" width="32" height="95"/>
@@ -259,11 +259,11 @@
   <object id="111" name="Obstacle" x="640" y="1278" width="32" height="63"/>
   <object id="112" name="Obstacle" x="609" y="1279" width="32" height="63"/>
   <object id="113" name="Obstacle" x="352" y="1280" width="32" height="49"/>
-  <object id="115" name="Wall" x="1" y="1" width="958" height="16"/>
-  <object id="116" name="Wall" x="1" y="17" width="15.3333" height="1582.67"/>
-  <object id="117" name="Wall" x="945" y="17" width="15.3333" height="1582.67"/>
-  <object id="119" name="Wall" x="5" y="1583.67" width="958" height="16"/>
-  <object id="120" name="Player" x="709.667" y="230" width="16" height="16"/>
+  <object id="115" name="Wall" x="1" y="1" width="958" height="26"/>
+  <object id="116" name="Wall" x="1" y="17" width="22.3333" height="1582.67"/>
+  <object id="117" name="Wall" x="936" y="17" width="24.3333" height="1582.67"/>
+  <object id="119" name="Wall" x="5" y="1576.67" width="958" height="23"/>
+  <object id="120" name="Player" x="712.667" y="233" width="16" height="16"/>
   <object id="121" name="mob" x="488.667" y="324" width="16" height="16"/>
   <object id="122" name="mob" x="679.667" y="586" width="16" height="16"/>
   <object id="123" name="mob" x="455.667" y="775" width="16" height="16"/>
@@ -297,6 +297,8 @@
   <object id="151" name="mobstatic" x="139.667" y="998" width="16" height="16"/>
   <object id="159" name="Obstacle" x="420" y="453" width="23" height="23"/>
   <object id="173" name="Obstacle" x="547" y="451" width="25" height="27"/>
+  <object id="226" name="NPCPlayer1" x="741.667" y="202" width="16" height="16"/>
+  <object id="227" name="NPCPlayer" x="677.667" y="200" width="16" height="16"/>
  </objectgroup>
  <objectgroup name="SubGoal Graph">
   <object id="175" name="Subgoal" x="297" y="491" width="12" height="12"/>

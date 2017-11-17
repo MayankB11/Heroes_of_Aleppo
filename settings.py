@@ -24,6 +24,7 @@ RED = (255,0,0)
 GREEN = (0,255,0)
 BLUE = (0,0,255)
 YELLOW = (255, 255, 0)
+BROWN = (106, 55, 5)
 #Mob Properties
 
 MOB_IMG = 'mob.png'

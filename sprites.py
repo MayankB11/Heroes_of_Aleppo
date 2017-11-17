@@ -448,3 +448,75 @@ class Hostage(pg.sprite.Sprite):
         self.time_bar = pg.Rect(0, 0, width, 7)
         #print (self.time)
         pg.draw.rect(self.image, self.col, self.time_bar)
+
+class Support(pg.sprite.Sprite):
+    def __init__(self, game, x, y, angle):
+        self.groups = game.all_sprites
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = game.player_img
+        self.rect = self.image.get_rect()
+        self.hit_rect = MOB_HIT_RECT.copy()
+        self.pos = vec(x, y)
+        self.vel = vec(0, 0)
+        self.acc = vec(0, 0)
+        self.rect.center = (x,y)
+        self.hit_rect.center = self.rect.center
+        self.rot = 0
+        self.health = MOB_HEALTH
+        self.speed=PLAYER_SPEED*1.25
+        self.offset = angle
+        self.isKilled = False
+
+    def avoid_mobs(self):
+        for mob in self.game.mobs:
+            if mob != self:
+                dist = self.pos - mob.pos
+                if 0 < dist.length() < AVOID_RADIUS:
+                    self.acc += dist.normalize()
+
+    def getTarget(self):
+        dir = vec(1,0).rotate(-self.game.player.rot)
+        dir_temp = dir.rotate(self.offset)
+        slot_pos = self.game.player.pos -dir*5 + dir_temp*32
+        return (slot_pos.x, slot_pos.y)
+
+    def seek_and_update(self,target):
+        targetDist=target-self.pos
+        if targetDist.length_squared()<DETECT_RADIUS**2:
+            rot = (target - self.pos).angle_to(vec(1, 0))
+            self.rot = self.game.player.rot
+            self.image = pg.transform.rotate(self.game.player_img, self.rot)
+            self.rect = self.image.get_rect()
+            self.rect.center = self.pos
+            self.acc = vec(1, 0).rotate(-rot)
+            self.avoid_mobs()
+            self.acc.scale_to_length(self.speed)
+            self.acc += self.vel * -1
+            self.vel += self.acc * self.game.dt
+            self.pos += self.vel * self.game.dt + 0.5 * self.acc * self.game.dt ** 2
+            self.hit_rect.centerx = self.pos.x
+            collide_with_walls(self, self.game.walls, 'x')
+            self.hit_rect.centery = self.pos.y
+            collide_with_walls(self, self.game.walls, 'y')
+            self.rect.center = self.hit_rect.center
+
+    def update(self):
+#        pass
+        target=self.getTarget()
+        self.seek_and_update(target)
+        if self.health <= 0:
+            self.kill()
+
+    def draw_health(self):
+        if self.health > 60:
+            self.col = GREEN
+        elif self.health > 30:
+            self.col = YELLOW
+        else:
+            self.col = RED
+        width = int(self.rect.width * self.health / MOB_HEALTH)
+        self.health_bar = pg.Rect(0, 0, width, 7)
+        if self.health < MOB_HEALTH:
+            pg.draw.rect(self.image, self.col, self.health_bar)
+
