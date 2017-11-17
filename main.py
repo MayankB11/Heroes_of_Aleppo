@@ -14,6 +14,36 @@ imageio.plugins.ffmpeg.download()
 img = pg.image.load('final.png')
 img = pg.transform.scale(img, (WIDTH, 720))
 
+import math
+
+
+class Graph:
+	def __init__(self):
+		self.nodes = []
+		self.edges = []
+		self.obstacles = []
+
+	def wall_avoided(self,i,j):
+		node1 = self.nodes[i]
+		node2 = self.nodes[j]
+		for obstacle in self.obstacles:
+			if self.distance_to_line(node1,node2,obstacle) < TILESIZE:
+				return False
+		return True
+
+	def distance_to_line(self, p1, p2 , p3):
+	    x_diff = p2.x - p1.x
+	    y_diff = p2.y - p1.y
+	    num = abs(y_diff*p3.x - x_diff*p3.y + p2.x*p1.y - p2.y*p1.x)
+	    den = math.sqrt(y_diff**2 + x_diff**2)+0.01
+	    return num / den
+
+	def computeEdges(self):
+		for i in range(len(self.nodes)):
+			for j in range(i,len(self.nodes)):
+				if self.wall_avoided(i,j) == True:
+					self.edges.append(vec(self.nodes[i],self.nodes[j]))
+
 def draw_player_health(surf, x, y, pct): #Adds the player health bar
 	fontfile = pg.font.get_default_font()
 	myfont = pg.font.Font(fontfile, 15)
@@ -66,12 +96,13 @@ class Game:
 		pg.display.set_caption(TITLE)
 		self.clock = pg.time.Clock()
 		pg.key.set_repeat(200,100)
-
+		self.graph = None
 		self.load_data()
 		self.hostage_count=0
 		self.score=0
 		self.paused=False
 		self.intro=False
+
 	def draw_text(self, text, font_name, size, color, x, y, align="topleft"):
 		font = pg.font.Font(font_name, size)
 		text_surface = font.render(text, True, color)
@@ -202,7 +233,17 @@ class Game:
 				if event.key == pg.K_p:
 					self.paused = not self.paused
 
-
+	def makeSSG(self):
+		g = Graph()
+		for tile_object in self.map.tmxdata.objects:
+			if tile_object.name == "Subgoal":
+				g.nodes.append (vec(tile_object.x, tile_object.y))
+			if tile_object.name == "Wall":
+				g.obstacles.append (vec(tile_object.x, tile_object.y))
+			if tile_object.name == "Obstacle":
+				g.obstacles.append (vec(tile_object.x, tile_object.y))
+		g.computeEdges()
+		return g
 
 
 	def draw(self):
@@ -319,6 +360,7 @@ class initial:
 #Start.show_start()
 g = Game()
 #g.show_start_screen()
+g.graph = g.makeSSG()
 while True:
 	g.new()
 	g.run()

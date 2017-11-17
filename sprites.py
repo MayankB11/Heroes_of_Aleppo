@@ -3,7 +3,7 @@ from tilemap import collide_hit_rect
 import pygame as pg
 vec = pg.math.Vector2
 from random import uniform
-
+import math
 
 def collide_with_walls(sprite, group, dir):
     if dir == 'x':
@@ -13,7 +13,7 @@ def collide_with_walls(sprite, group, dir):
                 sprite.pos.x = hits[0].rect.left - sprite.hit_rect.width / 2
             if hits[0].rect.centerx < sprite.hit_rect.centerx:
                 sprite.pos.x = hits[0].rect.right + sprite.hit_rect.width / 2
-            sprite.vel.x = 0
+            sprite.vel.x = -0.9*sprite.vel.x
             sprite.hit_rect.centerx = sprite.pos.x
     if dir == 'y':
         hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect)
@@ -22,7 +22,7 @@ def collide_with_walls(sprite, group, dir):
                 sprite.pos.y = hits[0].rect.top - sprite.hit_rect.height / 2
             if hits[0].rect.centery < sprite.hit_rect.centery:
                 sprite.pos.y = hits[0].rect.bottom + sprite.hit_rect.height / 2
-            sprite.vel.y = 0
+            sprite.vel.y = -0.9*sprite.vel.y
             sprite.hit_rect.centery = sprite.pos.y
 
 class Player(pg.sprite.Sprite):
@@ -43,6 +43,7 @@ class Player(pg.sprite.Sprite):
         self.last_shot = 0
         self.health = PLAYER_HEALTH
         self.resources=PLAYER_RESOURCES
+
 
     def get_keys(self):
         self.rot_speed = 0
@@ -134,6 +135,9 @@ class Mob(pg.sprite.Sprite):
         self.rot = 0
         self.health = MOB_HEALTH
         self.speed=MOB_SPEED
+        self.path = None
+        self.pathNode = -1
+        self.playerNode = None        
 
     def avoid_mobs(self):
         for mob in self.game.mobs:
@@ -141,6 +145,94 @@ class Mob(pg.sprite.Sprite):
                 dist = self.pos - mob.pos
                 if 0 < dist.length() < AVOID_RADIUS:
                     self.acc += dist.normalize()
+
+    def should_replan(self):
+        if (self.path == None or self.playerNode == None):
+            return True
+        nearestDistPlayer = math.inf
+        nearestNodePlayer = self.game.graph.nodes[0]        
+
+        if self.pathNode >= len(self.path):
+            return True
+        if self.lineRectCollision(self.game.player.pos,self.path[self.pathNode]) :
+            return True
+        return False
+
+    def lineRectCollision(self,pos,rect_center):
+        if (rect_center.x-pos.x) !=0:
+            slope = (rect_center.y-pos.y)/(rect_center.x-pos.x)
+        else:
+            slope = abs(rect_center.y-pos.y)/0.01
+        c = pos.y - slope*pos.x
+        walls = self.game.walls
+        for wall in walls:
+            if ((wall.y-slope*wall.x-c)/math.sqrt(1+slope**2)) < 0.72*TILESIZE:
+                return True
+            else :
+                return False
+
+    def getPath(self):
+        nearestDistMob = math.inf
+        nearestNodeMob = self.game.graph.nodes[0]
+        nearestDistPlayer = math.inf
+        nearestNodePlayer = self.game.graph.nodes[0]
+        tempMob = 0 
+        tempPlayer = 0 
+        for node in self.game.graph.nodes:
+            if math.sqrt((node.x-self.pos.x)**2+(node.y-self.pos.y)**2) < nearestDistMob and self.lineRectCollision(self.pos,node) == False:
+                nearestDistMob = math.sqrt((node.x-self.pos.x)**2+(node.y-self.pos.y)**2)
+                nearestNodeMob = node
+                tempMob = self.game.graph.nodes.index(node)
+            if math.sqrt((node.x-self.game.player.pos.x)**2+(node.y-self.game.player.pos.y)**2) < nearestDistPlayer and self.lineRectCollision(self.game.player.pos,node) == False:
+                nearestDistPlayer = math.sqrt((node.x-self.pos.x)**2+(node.y-self.pos.y)**2)
+                nearestNodePlayer = node
+                tempPlayer = self.game.graph.nodes.index(node)
+        if self.should_replan() == False:
+            if math.sqrt((self.path[self.pathNode].x-self.pos.x)**2+(self.path[self.pathNode].y-self.pos.y)**2) < 1.2*TILESIZE:
+                self.pathNode +=1
+            try :
+                return self.path[self.pathNode]
+            except :
+                return self.game.player.pos
+
+        dist = [math.inf]*(len(self.game.graph.nodes))
+        parent = [None]*(len(self.game.graph.nodes))
+        dist[tempMob] = 0
+        nodes = self.game.graph.nodes
+
+
+        while dist[tempPlayer] == math.inf :
+            for i in range(len(nodes)):
+                if dist[i] == math.inf :
+                    continue
+                for j in range(len(nodes)):
+                    if dist[i]+ math.sqrt((nodes[i].x-nodes[j].x)**2+(nodes[i].y-nodes[j].y)**2) > dist[j] or i==j:
+                        continue
+                    if vec(nodes[i],nodes[j]) in self.game.graph.edges : 
+                        dist[j] = dist[i]+ math.sqrt((nodes[i].x - nodes[j].x)**2+(nodes[i].y-nodes[j].y)**2) 
+                        parent[j] = i
+                    if vec(nodes[j],nodes[i]) in self.game.graph.edges :
+                        dist[j] = dist[i]+ math.sqrt((nodes[i].x-nodes[j].x)**2+(nodes[i].y-nodes[j].y)**2) 
+                        parent[j] = i
+        if tempPlayer == tempMob :
+            return self.game.player.pos
+
+        temp_node = nodes[tempPlayer] 
+        self.playerNode = temp_node
+        temp_path = []
+        temp_path.append(tempPlayer)              
+        while tempMob != tempPlayer:
+            tempMob = nodes.index(temp_node)
+            for i in range(len(nodes)):
+                if parent[i] == tempMob:
+                    temp_path.append(i)
+                    temp_node = nodes[i]
+                    tempPlayer = i
+        self.pathNode = 0
+        self.path = []
+        for i in range(len(temp_path)-1,-1,-1):
+            self.path.append(nodes[temp_path[i]])
+        return self.path[self.pathNode]
 
     def getCollision(self):
 #         rot = (self.game.player.pos - self.pos).angle_to(vec(1, 0))
@@ -184,9 +276,9 @@ class Mob(pg.sprite.Sprite):
 #                 return target
         return None
 
-    def seek_and_update(self,target):
+    def seek_and_update(self,target,inSight = False):
         targetDist=target-self.pos
-        if targetDist.length_squared()<DETECT_RADIUS**2:
+        if targetDist.length_squared()<DETECT_RADIUS**2 or inSight:
             self.rot = (target - self.pos).angle_to(vec(1, 0))
             self.image = pg.transform.rotate(self.game.mob_img, self.rot)
             self.rect = self.image.get_rect()
@@ -203,13 +295,39 @@ class Mob(pg.sprite.Sprite):
             collide_with_walls(self, self.game.walls, 'y')
             self.rect.center = self.hit_rect.center
 
+    def distLinePoint(self,m,c,point):
+        return abs((point.y-m*point.x-c)/math.sqrt(1+m**2))
+
+    def inSight(self):
+        playerPos = self.game.player.pos
+        mobPos    = self.pos
+        walls     = self.game.walls
+        m = math.tan(math.atan2(playerPos.y - mobPos.y,playerPos.x - mobPos.x))
+        c = playerPos.y - m*playerPos.x
+        maxx = max(playerPos.x,mobPos.x)
+        minx = min(playerPos.x,mobPos.x)
+        maxy = max(playerPos.y,mobPos.y)
+        miny = min(playerPos.y,mobPos.y)
+
+        for wall in walls:
+            wall_pos = vec(wall.rect.center[0],wall.rect.center[1])
+            if self.distLinePoint(m,c,wall_pos) < 0.707<TILESIZE  and wall_pos.x > minx and wall_pos.x < maxx and wall_pos.y > miny and wall_pos.y < maxy:
+                return False
+        return False
+
     def update(self):
 #        pass
-        target=self.getCollision()
-        if self.getCollision()==None:
-            self.seek_and_update(self.game.player.pos)
-        else:
-            self.seek_and_update(target)
+        inSight = self.inSight()
+        if inSight :
+            target=self.game.player.pos
+        else :
+            target=self.getPath()
+        self.seek_and_update(target,inSight)
+
+        # if self.getCollision()==None:
+        #     self.seek_and_update(self.game.player.pos)
+        # else:
+        #     self.seek_and_update(target)
         if self.health <= 0:
             self.kill()
             self.game.score+=50
