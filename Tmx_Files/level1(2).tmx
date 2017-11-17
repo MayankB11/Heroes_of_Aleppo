@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" tiledversion="1.0.3" orientation="orthogonal" renderorder="right-down" width="30" height="50" tilewidth="32" tileheight="32" nextobjectid="239">
+<map version="1.0" tiledversion="1.0.3" orientation="orthogonal" renderorder="right-down" width="30" height="50" tilewidth="32" tileheight="32" nextobjectid="228">
  <tileset firstgid="1" source="../img/Level 1/Base_level.tsx"/>
  <tileset firstgid="341" source="../img/Level 1/Base_level.tsx"/>
  <tileset firstgid="681" source="../img/Level 1/Walls.tsx"/>
@@ -288,7 +288,7 @@
   <object id="142" name="mobstatic" x="839.667" y="179" width="16" height="16"/>
   <object id="143" name="mobstatic" x="805.667" y="946" width="16" height="16"/>
   <object id="144" name="mobstatic" x="861.667" y="942" width="16" height="16"/>
-  <object id="145" name="mobstatic" x="835.667" y="958" width="16" height="16"/>
+  <object id="145" name="mobstatic" x="834.667" y="953" width="16" height="16"/>
   <object id="146" name="mobstatic" x="388.667" y="983" width="16" height="16"/>
   <object id="147" name="mobstatic" x="332.667" y="987" width="16" height="16"/>
   <object id="148" name="mobstatic" x="361.667" y="994" width="16" height="16"/>
@@ -299,12 +299,6 @@
   <object id="173" name="Obstacle" x="547" y="451" width="25" height="27"/>
   <object id="226" name="NPCPlayer1" x="741.667" y="202" width="16" height="16"/>
   <object id="227" name="NPCPlayer" x="677.667" y="200" width="16" height="16"/>
-  <object id="228" name="Exit" x="789" y="1329" width="12" height="174"/>
-  <object id="229" x="792" y="1356" height="1"/>
-  <object id="235" name="mobstatic" x="651.489" y="1155.35" width="16" height="16" rotation="-1.50682"/>
-  <object id="236" name="Hostage2" x="650.516" y="1127.39" width="16" height="16" rotation="-1.50682"/>
-  <object id="237" name="mobstatic" x="681.059" y="1133.67" width="16" height="16" rotation="-1.50682"/>
-  <object id="238" name="mobstatic" x="621.184" y="1160.14" width="16" height="16" rotation="-1.50682"/>
  </objectgroup>
  <objectgroup name="SubGoal Graph">
   <object id="175" name="Subgoal" x="297" y="491" width="12" height="12"/>
@@ -339,6 +333,12 @@
   <object id="205" name="Subgoal" x="361.164" y="1091.08" width="11.8356" height="11.8356"/>
   <object id="206" name="Subgoal" x="108.164" y="1034.08" width="11.8356" height="11.8356"/>
   <object id="207" name="Subgoal" x="105.164" y="1088.08" width="11.8356" height="11.8356"/>
+  <object id="208" name="Subgoal" x="778.164" y="1326.08" width="11.8356" height="11.8356"/>
+  <object id="209" name="Subgoal" x="775.164" y="1380.08" width="11.8356" height="11.8356"/>
+  <object id="210" name="Subgoal" x="778.164" y="1326.08" width="11.8356" height="11.8356"/>
+  <object id="211" name="Subgoal" x="775.164" y="1380.08" width="11.8356" height="11.8356"/>
+  <object id="212" name="Subgoal" x="775.164" y="1473.08" width="11.8356" height="11.8356"/>
+  <object id="213" name="Subgoal" x="778.164" y="1419.08" width="11.8356" height="11.8356"/>
   <object id="214" name="Subgoal" x="654.164" y="1387.08" width="11.8356" height="11.8356"/>
   <object id="215" name="Subgoal" x="545.164" y="1280.08" width="11.8356" height="11.8356"/>
   <object id="216" name="Subgoal" x="874.164" y="624.075" width="11.8356" height="11.8356"/>

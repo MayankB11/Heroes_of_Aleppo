@@ -59,6 +59,7 @@ def draw_player_resources(surf, x, y, pct):	#Adds the player health bar
 class Game:
 	def __init__(self):
 		#initialize game window etc.
+		self.flag=0
 		pg.init()
 		pg.mixer.init()
 		self.screen = pg.display.set_mode((WIDTH,HEIGHT))
@@ -81,6 +82,8 @@ class Game:
 		game_folder = path.dirname(__file__)
 		map_folder = path.join(game_folder,"Tmx_Files")
 		img_folder = path.join(game_folder,"img")
+		music_folder = path.join(game_folder, 'music')
+		snd_folder = path.join(game_folder, 'snd')
 		self.clip = (VideoFileClip("Intro_720p.mp4").fx(vfx.resize, width=960))
 		self.dim_screen = pg.Surface(self.screen.get_size()).convert_alpha()
 		self.dim_screen.fill((0, 0, 0, 180))
@@ -94,7 +97,7 @@ class Game:
 		self.mob_img = pg.image.load(path.join(img_folder,MOB_IMG)).convert_alpha()
 		self.player_img = pg.transform.scale(self.player_img, (TILESIZE,TILESIZE))
 		self.mob_img = pg.transform.scale(self.mob_img, (TILESIZE,TILESIZE))
-
+		pg.mixer.music.load(path.join(music_folder, BG_MUSIC))
 	def new(self):
 		#start a new game
 		self.all_sprites = pg.sprite.Group()
@@ -108,9 +111,9 @@ class Game:
 			if tile_object.name == "Player":
 				self.player = Player(self,tile_object.x, tile_object.y)
 			elif tile_object.name == "Wall":
-				Obstacle(self,tile_object.x,tile_object.y,tile_object.width,tile_object.height)
+				Obstacle(self,tile_object.x,tile_object.y,tile_object.width,tile_object.height,"Wall")
 			elif tile_object.name == "Obstacle":
-				Obstacle(self,tile_object.x,tile_object.y,tile_object.width,tile_object.height)
+				Obstacle(self,tile_object.x,tile_object.y,tile_object.width,tile_object.height,"Wall")
 			elif tile_object.name == "mob":
 				Mob(self,tile_object.x,tile_object.y)
 			elif tile_object.name=="mobstatic":
@@ -125,7 +128,8 @@ class Game:
 				self.support1 = Support(self,tile_object.x,tile_object.y,120)
 			elif tile_object.name=="NPCPlayer1":
 				self.support2 = Support(self,tile_object.x,tile_object.y,-120)
-
+			elif tile_object.name == "Exit":
+				Obstacle(self,tile_object.x,tile_object.y,tile_object.width,tile_object.height,"Exit")
 	#		print(tile_object.x,tile_object.y);
 
 		self.camera = Camera(self.map.width,self.map.height)
@@ -136,6 +140,7 @@ class Game:
 		#	self.clip.preview()
 			self.intro=True
 		self.playing = True
+		pg.mixer.music.play(loops=-1)
 		while self.playing:
 			self.dt = self.clock.tick(FPS)/1000
 			self.events()
@@ -157,7 +162,7 @@ class Game:
 			self.player.health=self.player.health-MOB_DAMAGE
 			hit.vel=vec(0,0)
 			if self.player.health<=0:
-
+				self.flag=0
 				self.playing = False
 			elif self.player.health <= 30:
 				self.support2.kill()
@@ -234,13 +239,26 @@ class Game:
 			self.screen.blit(img,(0,0))
 			pg.display.update()
 		
-
+	def win_screen(self):
+		#self.screen.fill(BLACK)
+		self.screen.blit(self.dim_screen, (0, 0))
+		self.draw_text("Score- "+str(self.score), self.title_font, 100, RED, WIDTH / 2, HEIGHT / 4, align="center")
+		self.draw_text("You won", self.title_font, 100, RED, WIDTH / 2, HEIGHT / 2, align="center")
+		self.draw_text("Press a key to start", self.title_font, 75, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align="center")
+		pg.display.flip()
+		self.hostage_count=0
+		self.score=0
+		#pg.display.update()
+		self.wait_for_key()		
 	def show_go_screen(self):
 		#self.screen.fill(BLACK)
 		self.screen.blit(self.dim_screen, (0, 0))
+		self.draw_text("Score- "+str(self.score), self.title_font, 100, RED, WIDTH / 2, HEIGHT / 4, align="center")
 		self.draw_text("GAME OVER", self.title_font, 100, RED, WIDTH / 2, HEIGHT / 2, align="center")
 		self.draw_text("Press a key to start", self.title_font, 75, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align="center")
 		pg.display.flip()
+		self.hostage_count=0
+		self.score=0
 		#pg.display.update()
 		self.wait_for_key()
 		# Show screen
@@ -295,13 +313,15 @@ class initial:
 			self.screen.blit(img,(0,0))
 			pg.display.update()
 
-Start=initial()
-Start.show_start()
+#Start=initial()
+#Start.show_start()
 g = Game()
 #g.show_start_screen()
 while True:
 	g.new()
 	g.run()
-	g.show_go_screen()
-
+	if g.flag==0:
+		g.show_go_screen()
+	else:
+		g.win_screen()
 pg.quit()

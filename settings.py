@@ -56,4 +56,10 @@ ITEMS_LAYER = 1
 # Hostage Values
 START_TIME=30
 HOSTAGE_RESCUE=10
-HOSTAGE_COUNT=5
+HOSTAGE_COUNT=6
+
+#Music
+
+BG_MUSIC="bg.mp3"
+WEAPON_SOUNDS = {'pistol': ['pistol.wav'],
+                 'shotgun': ['shotgun.wav']}

@@ -67,6 +67,42 @@ class Player(pg.sprite.Sprite):
                     Bullet(self.game, pos, dir_temp)
                 self.vel = vec(-KICKBACK, 0).rotate(-self.rot)
 
+    def collide_with_wall(self,sprite, group, dir):
+        if dir == 'x':
+            hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect)
+            if hits:
+                if hits[0].name == "Exit":
+                    self.game.score+=self.health*15
+                    if self.game.hostage_count>=3:
+                        self.game.flag=1
+                    else:   
+                        self.game.flag=0
+                    
+                    self.game.playing = False
+                elif hits[0].rect.centerx > sprite.hit_rect.centerx:
+                    sprite.pos.x = hits[0].rect.left - sprite.hit_rect.width / 2
+                elif hits[0].rect.centerx < sprite.hit_rect.centerx:
+                    sprite.pos.x = hits[0].rect.right + sprite.hit_rect.width / 2
+                sprite.vel.x = 0
+                sprite.hit_rect.centerx = sprite.pos.x
+        if dir == 'y':
+            hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect)
+            if hits:
+                if hits[0].name == "Exit":
+                    self.game.score+=self.health*15
+                    if self.game.hostage_count>=3:
+                        self.game.flag=1
+                    else:
+                        self.game.flag=0
+                    
+                    self.game.playing = False
+                elif hits[0].rect.centery > sprite.hit_rect.centery:
+                    sprite.pos.y = hits[0].rect.top - sprite.hit_rect.height / 2
+                elif hits[0].rect.centery < sprite.hit_rect.centery:
+                    sprite.pos.y = hits[0].rect.bottom + sprite.hit_rect.height / 2
+                sprite.vel.y = 0
+                sprite.hit_rect.centery = sprite.pos.y
+
 
     def update(self):
         self.get_keys()
@@ -76,9 +112,9 @@ class Player(pg.sprite.Sprite):
         self.rect.center = self.pos
         self.pos += self.vel * self.game.dt
         self.hit_rect.centerx = self.pos.x
-        collide_with_walls(self, self.game.walls, 'x')
+        self.collide_with_wall(self, self.game.walls, 'x')
         self.hit_rect.centery = self.pos.y
-        collide_with_walls(self, self.game.walls, 'y')
+        self.collide_with_wall(self, self.game.walls, 'y')
         self.rect.center = self.hit_rect.center
 
 class Mob(pg.sprite.Sprite):
@@ -175,6 +211,7 @@ class Mob(pg.sprite.Sprite):
             self.seek_and_update(target)
         if self.health <= 0:
             self.kill()
+            self.game.score+=50
 
     def draw_health(self):
         if self.health > 60:
@@ -202,7 +239,7 @@ class Wall(pg.sprite.Sprite):
         self.rect.y = y*TILESIZE
 
 class Obstacle(pg.sprite.Sprite):
-    def __init__(self,game,x,y,w,h):
+    def __init__(self,game,x,y,w,h,name):
         self.groups = game.walls
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
@@ -211,6 +248,7 @@ class Obstacle(pg.sprite.Sprite):
         self.y = y
         self.rect.x = x
         self.rect.y = y
+        self.name = name
 class Bullet(pg.sprite.Sprite):
     def __init__(self, game, pos, dir):
         self.groups = game.all_sprites, game.bullets
