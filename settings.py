@@ -27,7 +27,7 @@ YELLOW = (255, 255, 0)
 BROWN = (106, 55, 5)
 #Mob Properties
 
-MOB_IMG = 'mob.png'
+MOB_IMG = 'fire.png'
 MOB_SPEED = 150
 MOB_HIT_RECT = pg.Rect(0, 0, 18, 18)
 MOB_HEALTH = 100

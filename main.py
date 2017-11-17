@@ -315,8 +315,8 @@ class initial:
 			self.screen.blit(img,(0,0))
 			pg.display.update()
 
-Start=initial()
-Start.show_start()
+#Start=initial()
+#Start.show_start()
 g = Game()
 #g.show_start_screen()
 while True:
