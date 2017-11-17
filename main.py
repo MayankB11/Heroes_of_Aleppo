@@ -230,14 +230,32 @@ class Game:
 				if event.type == pg.KEYDOWN:
 					if event.key == pg.K_RETURN:
 						intro = False
-			self.screen.fill(WHITE)
+			#self.screen.fill(WHITE)
 			self.screen.blit(img,(0,0))
 			pg.display.update()
 		
 
 	def show_go_screen(self):
+		#self.screen.fill(BLACK)
+		self.screen.blit(self.dim_screen, (0, 0))
+		self.draw_text("GAME OVER", self.title_font, 100, RED, WIDTH / 2, HEIGHT / 2, align="center")
+		self.draw_text("Press a key to start", self.title_font, 75, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align="center")
+		pg.display.flip()
+		#pg.display.update()
+		self.wait_for_key()
 		# Show screen
 		pass
+	def wait_for_key(self):
+		pg.event.wait()
+		waiting = True
+		while waiting:
+			self.clock.tick(FPS)
+			for event in pg.event.get():
+				if event.type == pg.QUIT:
+					waiting = False
+					self.quit()
+				if event.type == pg.KEYUP:
+					waiting = False	
 # def start_game():
 # 	intro = True
 # 	while intro:
@@ -251,8 +269,34 @@ class Game:
 # 		self.screen.fill(WHITE)
 # 		self.screen.blit(img,(0,0))
 # 		pg.display.update()
-clip = (VideoFileClip("Intro_720p.mp4").fx(vfx.resize, width=960))
-#clip.preview()
+class initial:
+	def __init__(self):
+		pg.init()
+		pg.mixer.init()
+		self.screen = pg.display.set_mode((WIDTH,HEIGHT))
+		pg.display.set_caption(TITLE)
+		self.clock = pg.time.Clock()
+#		self.show_start()
+	def show_start(self):
+		intro = True
+		clip = (VideoFileClip("Intro_720p.mp4").fx(vfx.resize, width=960))
+		clip.preview()
+		self.screen = pg.display.set_mode((WIDTH,HEIGHT))
+		while intro:
+			for event in pg.event.get():
+				if event.type == pg.QUIT:
+					pg.quit()
+					quit()
+				if event.type == pg.KEYDOWN:
+					if event.key == pg.K_RETURN:
+						intro = False
+						break
+			#self.screen.fill(WHITE)
+			self.screen.blit(img,(0,0))
+			pg.display.update()
+
+Start=initial()
+Start.show_start()
 g = Game()
 #g.show_start_screen()
 while True:
