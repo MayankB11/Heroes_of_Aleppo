@@ -61,5 +61,5 @@ HOSTAGE_COUNT=6
 #Music
 
 BG_MUSIC="bg.mp3"
-WEAPON_SOUNDS = {'pistol': ['pistol.wav'],
-                 'shotgun': ['shotgun.wav']}
+GUN_SOUND="pistol.wav"
+            

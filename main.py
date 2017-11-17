@@ -97,6 +97,8 @@ class Game:
 		self.mob_img = pg.image.load(path.join(img_folder,MOB_IMG)).convert_alpha()
 		self.player_img = pg.transform.scale(self.player_img, (TILESIZE,TILESIZE))
 		self.mob_img = pg.transform.scale(self.mob_img, (TILESIZE,TILESIZE))
+		self.gun_effect=pg.mixer.Sound(path.join(snd_folder,GUN_SOUND))
+		self.gun_effect.set_volume(0.2)
 		pg.mixer.music.load(path.join(music_folder, BG_MUSIC))
 	def new(self):
 		#start a new game
@@ -313,8 +315,8 @@ class initial:
 			self.screen.blit(img,(0,0))
 			pg.display.update()
 
-#Start=initial()
-#Start.show_start()
+Start=initial()
+Start.show_start()
 g = Game()
 #g.show_start_screen()
 while True:

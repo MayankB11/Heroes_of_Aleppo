@@ -66,7 +66,8 @@ class Player(pg.sprite.Sprite):
                     dir_temp=dir.rotate(i*20)   
                     Bullet(self.game, pos, dir_temp)
                 self.vel = vec(-KICKBACK, 0).rotate(-self.rot)
-
+                s=self.game.gun_effect
+                s.play()
     def collide_with_wall(self,sprite, group, dir):
         if dir == 'x':
             hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect)
