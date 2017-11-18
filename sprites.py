@@ -117,8 +117,6 @@ class Mob(pg.sprite.Sprite):
 
         if self.pathNode >= len(self.path):
             return True
-        if self.lineRectCollision(self.game.player.pos,self.path[self.pathNode]) :
-            return True
         return False
 
     def getCollision(self):
@@ -186,16 +184,16 @@ class Mob(pg.sprite.Sprite):
         tempMob = 0 
         tempPlayer = 0 
         for node in self.game.graph.nodes:
-            if math.sqrt((node.x-self.pos.x)**2+(node.y-self.pos.y)**2) < nearestDistMob and self.lineRectCollision(self.pos,node) == False:
+            if math.sqrt((node.x-self.pos.x)**2+(node.y-self.pos.y)**2) < nearestDistMob :
                 nearestDistMob = math.sqrt((node.x-self.pos.x)**2+(node.y-self.pos.y)**2)
                 nearestNodeMob = node
                 tempMob = self.game.graph.nodes.index(node)
-            if math.sqrt((node.x-self.game.player.pos.x)**2+(node.y-self.game.player.pos.y)**2) < nearestDistPlayer and self.lineRectCollision(self.game.player.pos,node) == False:
+            if math.sqrt((node.x-self.game.player.pos.x)**2+(node.y-self.game.player.pos.y)**2) < nearestDistPlayer :
                 nearestDistPlayer = math.sqrt((node.x-self.pos.x)**2+(node.y-self.pos.y)**2)
                 nearestNodePlayer = node
                 tempPlayer = self.game.graph.nodes.index(node)
         if self.should_replan() == False:
-            if math.sqrt((self.path[self.pathNode].x-self.pos.x)**2+(self.path[self.pathNode].y-self.pos.y)**2) < 1.2*TILESIZE:
+            if math.sqrt((self.path[self.pathNode].x-self.pos.x)**2+(self.path[self.pathNode].y-self.pos.y)**2) < 0.71*TILESIZE:
                 self.pathNode +=1
             try :
                 return self.path[self.pathNode]
@@ -275,6 +273,8 @@ class Mob(pg.sprite.Sprite):
         #     target = 5*(self.game.player.pos-self.pos)+self.pos
         #     self.seek_and_update(target)
         # elif math.sqrt((self.pos.x-self.game.player.pos.x)**2+(self.pos.y-self.game.player.pos.y)**2) < DETECT_RADIUS :
+        
+        target = self.getPath()
         target = vec(target.x,target.y)
         self.seek_and_update(target)
         if self.health <= 0:

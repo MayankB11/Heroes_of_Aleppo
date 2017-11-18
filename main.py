@@ -203,12 +203,8 @@ class Game:
 g = Game()
 g.show_start_screen()
 g.graph = g.makeSSG()
-flag = 0
 while True:
 	g.new()
-	if flag == 0:
-		flag =1
-		g.stepsMap = generateSteps(g.walls)
 	g.run()
 	g.show_go_screen()
 

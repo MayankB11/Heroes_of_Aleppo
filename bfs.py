@@ -47,7 +47,7 @@ def generateSteps(Wall):
 	
 	for i in range(WIDTH//TILESIZE):
 		for j in range(HEIGHT//TILESIZE):
-			print("Here",count)
+			#print("Here",count)
 			count = count + 1
 			bfs(vec(i,j),stepsMap,Wall)
 
