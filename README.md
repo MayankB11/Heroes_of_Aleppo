@@ -1,14 +1,14 @@
-**Python Version : 3.5
+**Python Version : 3.5**
 
-**Installing Dependencies
-chmod +x install_dependencies.sh
+**Installing Dependencies**<br />
+chmod +x install_dependencies.sh<br />
 ./install_dependencies.sh
 
-**Running the game
-chmod +x run.sh
+**Running the game**<br />
+chmod +x run.sh<br />
 ./run.sh
 
-**Rules of the game
+**Rules of the game**<br />
 Instructions for the player:
 
 1. Use 'w' to move forward.
@@ -21,7 +21,7 @@ Instructions for the player:
 8. Health bar and Resource bar at the top left corner of the game screen.
 9. Hostages must be saved in a minimum time which is different for different hostages depending upon the relative position of the hostage from the player at start time
 
-**Known bugs in the game
+**Known bugs in the game**
 1. Videos can not be skipped as it hinders with the game mechanism.
 
 
