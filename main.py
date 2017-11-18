@@ -314,9 +314,10 @@ class initial:
 			#self.screen.fill(WHITE)
 			self.screen.blit(img,(0,0))
 			pg.display.update()
-
-#Start=initial()
-#Start.show_start()
+		clip1 = (VideoFileClip("2nd.mp4").fx(vfx.resize, width=960))
+		clip1.preview()
+Start=initial()
+Start.show_start()
 g = Game()
 #g.show_start_screen()
 while True:
@@ -326,4 +327,8 @@ while True:
 		g.show_go_screen()
 	else:
 		g.win_screen()
+		break
+
+clip = (VideoFileClip("end.mp4").fx(vfx.resize, width=960))
+clip.preview()
 pg.quit()
