@@ -1,5 +1,5 @@
-##Heroes of Aleppo
-
+Heroes of Aleppo
+----------------
 **Python Version : 3.5**
 
 **Installing Dependencies**<br />
