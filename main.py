@@ -8,7 +8,10 @@ from tilemap import *
 from moviepy.editor import *
 from pygame.locals import *
 import imageio
-imageio.plugins.ffmpeg.download()
+from tkinter import *
+import pyautogui
+import pandas as pd
+# imageio.plugins.ffmpeg.download()
 
 # HUD functions
 img = pg.image.load('final.png')
@@ -57,6 +60,7 @@ def draw_player_resources(surf, x, y, pct):	#Adds the player health bar
 	pg.draw.rect(surf, WHITE, outline_rect, 2)
 
 class Game:
+	rootframe = True
 	def __init__(self):
 		#initialize game window etc.
 		self.flag=0
@@ -182,12 +186,41 @@ class Game:
 		for hit in hits:
 			self.player.resources-=HOSTAGE_RESCUE
 			hit.kill()
-			self.hostage_count=self.hostage_count+1
-			self.score+=100
+			# pyautogui.Press('p')
+			self.question()
+			print("HOLA I'm out")
+			self.rootframe = True
 		hits=pg.sprite.groupcollide(self.mobs,self.bullets,False,True)
 		for hit in hits:
 			hit.health-=BULLET_DAMAGE
 			hit.vel=vec(0,0)
+
+
+	def callbacK(self, a, b, frame):
+		if (a == b):
+			self.score += 100
+			self.hostage_count=self.hostage_count+1
+		self.rootframe = False
+		frame.quit()
+		
+	def question(self):
+		Qno = 4
+		d=pd.read_csv('abc.csv',delimiter=',')
+		root = Tk()
+		frame = Frame(root)
+		frame.pack()
+		label = Label(frame, text=d['Question'][Qno])
+		label.pack()
+		a = Button(frame, text="Option A:"+d['A'][Qno], command=lambda m="A",p=d['Ans'][Qno],f=frame: self.callbacK(m, p, f)).pack()
+		b = Button(frame, text="Option B:"+d['B'][Qno], command=lambda m="B",p=d['Ans'][Qno],f=frame: self.callbacK(m, p, f)).pack()
+		c = Button(frame, text="Option C:"+d['C'][Qno], command=lambda m="C",p=d['Ans'][Qno],f=frame: self.callbacK(m, p, f)).pack()
+		d = Button(frame, text="Option D:"+d['D'][Qno], command=lambda m="D",p=d['Ans'][Qno],f=frame: self.callbacK(m, p, f)).pack()
+		# frame.quit()
+		if self.rootframe:
+			frame.quit()
+			root.mainloop()
+		else:
+			frame.quit()
 
 	def events(self):
 		#Game Loop events
@@ -316,6 +349,9 @@ class initial:
 			pg.display.update()
 		clip1 = (VideoFileClip("2nd.mp4").fx(vfx.resize, width=960))
 		clip1.preview()
+
+
+		
 Start=initial()
 Start.show_start()
 g = Game()
