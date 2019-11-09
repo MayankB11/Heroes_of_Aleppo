@@ -9,13 +9,14 @@ from moviepy.editor import *
 from pygame.locals import *
 import imageio
 from tkinter import *
-import pyautogui
 import pandas as pd
 # imageio.plugins.ffmpeg.download()
 
 # HUD functions
 img = pg.image.load('final.png')
 img = pg.transform.scale(img, (WIDTH, 720))
+Qno = 0
+d=pd.read_csv('abc.csv',delimiter=',')
 
 def draw_player_health(surf, x, y, pct): #Adds the player health bar
 	fontfile = pg.font.get_default_font()
@@ -61,6 +62,7 @@ def draw_player_resources(surf, x, y, pct):	#Adds the player health bar
 
 class Game:
 	rootframe = True
+	noclick = False
 	def __init__(self):
 		#initialize game window etc.
 		self.flag=0
@@ -186,41 +188,43 @@ class Game:
 		for hit in hits:
 			self.player.resources-=HOSTAGE_RESCUE
 			hit.kill()
-			# pyautogui.Press('p')
 			self.question()
-			print("HOLA I'm out")
 			self.rootframe = True
+			self.noclick = False
+			global Qno
+			Qno += 1
 		hits=pg.sprite.groupcollide(self.mobs,self.bullets,False,True)
 		for hit in hits:
 			hit.health-=BULLET_DAMAGE
 			hit.vel=vec(0,0)
 
-
 	def callbacK(self, a, b, frame):
-		if (a == b):
+		if self.noclick == False and a == b:
 			self.score += 100
 			self.hostage_count=self.hostage_count+1
+			self.noclick = True
 		self.rootframe = False
-		frame.quit()
-		
+
 	def question(self):
-		Qno = 4
-		d=pd.read_csv('abc.csv',delimiter=',')
+		def ask_question():
+			global d
+			frame = Frame(root)
+			frame.pack()
+			print(Qno)
+			print(d['Question'][Qno])
+			label = Label(frame, text=d['Question'][Qno])
+			label.pack()
+			a1 = Button(frame, text="Option A:"+d['A'][Qno], command=lambda m="A",p=d['Ans'][Qno],f=frame: self.callbacK(m, p, f)).pack()
+			b1 = Button(frame, text="Option B:"+d['B'][Qno], command=lambda m="B",p=d['Ans'][Qno],f=frame: self.callbacK(m, p, f)).pack()
+			c1 = Button(frame, text="Option C:"+d['C'][Qno], command=lambda m="C",p=d['Ans'][Qno],f=frame: self.callbacK(m, p, f)).pack()
+			d1 = Button(frame, text="Option D:"+d['D'][Qno], command=lambda m="D",p=d['Ans'][Qno],f=frame: self.callbacK(m, p, f)).pack()
+			if self.rootframe == False:
+				root.quit()
+
 		root = Tk()
-		frame = Frame(root)
-		frame.pack()
-		label = Label(frame, text=d['Question'][Qno])
-		label.pack()
-		a = Button(frame, text="Option A:"+d['A'][Qno], command=lambda m="A",p=d['Ans'][Qno],f=frame: self.callbacK(m, p, f)).pack()
-		b = Button(frame, text="Option B:"+d['B'][Qno], command=lambda m="B",p=d['Ans'][Qno],f=frame: self.callbacK(m, p, f)).pack()
-		c = Button(frame, text="Option C:"+d['C'][Qno], command=lambda m="C",p=d['Ans'][Qno],f=frame: self.callbacK(m, p, f)).pack()
-		d = Button(frame, text="Option D:"+d['D'][Qno], command=lambda m="D",p=d['Ans'][Qno],f=frame: self.callbacK(m, p, f)).pack()
 		# frame.quit()
-		if self.rootframe:
-			frame.quit()
-			root.mainloop()
-		else:
-			frame.quit()
+		root.after(0, ask_question)
+		root.mainloop()
 
 	def events(self):
 		#Game Loop events
